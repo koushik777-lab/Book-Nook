@@ -36,11 +36,13 @@ export default function BookDetail() {
   const { toast } = useToast();
 
   const { data: book, isLoading: loadingBook } = useQuery<BookWithDetails>({
-    queryKey: ["/api/books", bookId],
+    queryKey: [`/api/books/${bookId}`],
+    enabled: !!bookId,
   });
 
   const { data: reviews = [], isLoading: loadingReviews } = useQuery<ReviewWithUser[]>({
-    queryKey: ["/api/books", bookId, "reviews"],
+    queryKey: [`/api/books/${bookId}/reviews`],
+    enabled: !!bookId,
   });
 
   const { data: bookmarks = [] } = useQuery<BookmarkType[]>({
@@ -49,8 +51,8 @@ export default function BookDetail() {
   });
 
   const { data: progress } = useQuery<ReadingProgress>({
-    queryKey: ["/api/reading-progress", bookId],
-    enabled: !!user,
+    queryKey: [`/api/reading-progress/${bookId}`],
+    enabled: !!user && !!bookId,
   });
 
   const isBookmarked = bookmarks.some((b) => b.bookId === bookId);
@@ -98,7 +100,7 @@ export default function BookDetail() {
       window.URL.revokeObjectURL(url);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/books", bookId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/books/${bookId}`] });
       toast({
         title: "Download Started",
         description: "Your book is being downloaded",
@@ -118,8 +120,9 @@ export default function BookDetail() {
       await apiRequest("POST", `/api/books/${bookId}/reviews`, { rating, comment });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/books", bookId, "reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/books", bookId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/books/${bookId}/reviews`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/books/${bookId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/books"] });
       toast({
         title: "Review Submitted",
         description: "Thank you for your review!",

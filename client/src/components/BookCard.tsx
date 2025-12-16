@@ -1,9 +1,12 @@
-import { Link } from "wouter";
+import { useState } from "react";
+import { useLocation } from "wouter";
 import { Download, Bookmark, BookmarkCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/StarRating";
+import { LoginModal } from "@/components/LoginModal";
+import { useAuth } from "@/lib/auth";
 import type { BookWithDetails } from "@shared/schema";
 
 interface BookCardProps {
@@ -14,6 +17,10 @@ interface BookCardProps {
 }
 
 export function BookCard({ book, isBookmarked = false, onBookmarkToggle, index = 0 }: BookCardProps) {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -22,15 +29,30 @@ export function BookCard({ book, isBookmarked = false, onBookmarkToggle, index =
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) {
+      setShowLoginModal(true);
+    } else {
+      setLocation(`/books/${book.id}`);
+    }
+  };
+
+  const handleLoginSuccess = () => {
+    setShowLoginModal(false);
+    setLocation(`/books/${book.id}`);
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-    >
-      <Link href={`/books/${book.id}`}>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.05 }}
+      >
         <Card
-          className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg"
+          onClick={handleCardClick}
+          className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
           data-testid={`card-book-${book.id}`}
         >
           <div className="aspect-[2/3] relative overflow-hidden bg-muted">
@@ -113,7 +135,13 @@ export function BookCard({ book, isBookmarked = false, onBookmarkToggle, index =
             </div>
           </div>
         </Card>
-      </Link>
-    </motion.div>
+      </motion.div>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={handleLoginSuccess}
+      />
+    </>
   );
 }
