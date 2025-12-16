@@ -1,11 +1,11 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { 
-  Download, 
-  Bookmark, 
-  BookmarkCheck, 
-  ArrowLeft, 
+import {
+  Download,
+  Bookmark,
+  BookmarkCheck,
+  ArrowLeft,
   FileText,
   Calendar,
   User as UserIcon,
@@ -164,7 +164,7 @@ export default function BookDetail() {
     );
   }
 
-  if (!book) {
+  if (!book || !book.title) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -181,8 +181,8 @@ export default function BookDetail() {
   }
 
   const hasUserReviewed = reviews.some((r) => r.userId === user?.id);
-  const progressPercent = progress && progress.totalPages 
-    ? (progress.lastPage / progress.totalPages) * 100 
+  const progressPercent = progress && progress.totalPages
+    ? (progress.lastPage / progress.totalPages) * 100
     : 0;
 
   return (
@@ -218,7 +218,7 @@ export default function BookDetail() {
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
                     <span className="text-6xl font-bold text-primary/30">
-                      {book.title.charAt(0)}
+                      {book?.title?.charAt(0)}
                     </span>
                   </div>
                 )}
@@ -280,7 +280,7 @@ export default function BookDetail() {
             <div>
               <h1 className="text-3xl font-bold mb-2" data-testid="text-book-title">{book.title}</h1>
               <p className="text-xl text-muted-foreground mb-4">{book.author}</p>
-              
+
               <div className="flex flex-wrap items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
                   <StarRating rating={book.averageRating || 0} size="md" showValue />
